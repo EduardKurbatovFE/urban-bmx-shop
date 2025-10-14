@@ -15,6 +15,8 @@ export const useHeader = () => {
     { label: 'Вийти', action: signOut },
   ];
 
+  console.log(session);
+
   return {
     user: session?.user,
     showLoginModal,

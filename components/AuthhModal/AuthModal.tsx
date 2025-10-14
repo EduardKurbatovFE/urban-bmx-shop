@@ -32,60 +32,80 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
   };
 
   const onSubmit = async (values: FieldValues) => {
-    const { email, password, name } = values;
-    try {
-      if (showRegisterFlow) {
-        // Виклик API реєстрації
-        const res = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name }),
-        });
+    const { email, password } = values;
 
-        const data = await res.json();
+    const result = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    });
 
-        if (!res.ok) {
-          addSnackbar({
-            key: 'error',
-            text: data.error || 'Sign-up failed',
-            variant: 'error',
-          });
-        } else {
-          // Показати інфо про лист підтвердження
-          addSnackbar({
-            key: 'info',
-            text: 'Лист для підтвердження реєстрації надіслано. Перевірте пошту.',
-            variant: 'info',
-          });
-        }
-        // При реєстрації не логінити користувача, просто вийти з функції
-        return;
-      }
+    console.log(result);
 
-      // Якщо це не реєстрація, а вхід — логін через credentials
-      const login = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (login?.error) {
-        addSnackbar({
-          key: 'error',
-          text: login.error,
-          variant: 'error',
-        });
-      }
-    } catch (err) {
+    if (result?.error) {
       addSnackbar({
         key: 'error',
-        text: 'Щось пішло не так',
+        text: 'Невірний логін або пароль',
         variant: 'error',
       });
-    } finally {
-      toggleLoginModal();
     }
   };
+
+  // const onSubmit = async (values: FieldValues) => {
+  //   const { email, password, name } = values;
+  //   try {
+  //     if (showRegisterFlow) {
+  //       // Виклик API реєстрації
+  //       const res = await fetch('/api/auth/signup', {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({ email, password, name }),
+  //       });
+
+  //       const data = await res.json();
+
+  //       if (!res.ok) {
+  //         addSnackbar({
+  //           key: 'error',
+  //           text: data.error || 'Sign-up failed',
+  //           variant: 'error',
+  //         });
+  //       } else {
+  //         // Показати інфо про лист підтвердження
+  //         addSnackbar({
+  //           key: 'info',
+  //           text: 'Лист для підтвердження реєстрації надіслано. Перевірте пошту.',
+  //           variant: 'info',
+  //         });
+  //       }
+  //       // При реєстрації не логінити користувача, просто вийти з функції
+  //       return;
+  //     }
+
+  //     // Якщо це не реєстрація, а вхід — логін через credentials
+  //     const login = await signIn('credentials', {
+  //       email,
+  //       password,
+  //       redirect: false,
+  //     });
+
+  //     if (login?.error) {
+  //       addSnackbar({
+  //         key: 'error',
+  //         text: login.error,
+  //         variant: 'error',
+  //       });
+  //     }
+  //   } catch (err) {
+  //     addSnackbar({
+  //       key: 'error',
+  //       text: 'Щось пішло не так',
+  //       variant: 'error',
+  //     });
+  //   } finally {
+  //     toggleLoginModal();
+  //   }
+  // };
 
   return (
     <>
@@ -165,14 +185,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
                 </button>
 
                 <button
-                  onClick={() =>
-                    addSnackbar({
-                      key: 'error',
-                      text: '1234',
-                      variant: 'error',
-                    })
-                  }
-                  // onClick={() => signIn('google')}
+                  onClick={() => signIn('google')}
                   className="flex items-center justify-center gap-2 border border-stone-400 rounded text-sm hover:opacity-90 cursor-pointer h-9"
                 >
                   <p className="text-stone-700">{`${showRegisterFlow ? 'Зареєструватись' : 'Увійти'} з Google`}</p>
