@@ -1,4 +1,5 @@
 'use client';
+
 import React from 'react';
 import AccountIcon from '@/icons/AccountIcon';
 import CartIcon from '@/icons/Cart';
@@ -6,8 +7,7 @@ import SearchIcon from '@/icons/SearchIcon';
 import UBSLogo from '../../assets/ubs.jpg';
 import Image from 'next/image';
 import { useHeader } from './use-header';
-import CloseIcon from '@/icons/CloseIcon';
-import { signIn, signOut } from 'next-auth/react';
+import AuthModal from '../AuthhModal';
 
 const Header = () => {
   const { user, showLoginModal, userModalAssets, toggleLoginModal } =
@@ -51,25 +51,27 @@ const Header = () => {
                 {user ? user.name : 'Увійти'}
               </p>
 
-              <div
-                className="
+              {user && (
+                <div
+                  className="
                   absolute top-full left-0 mt-2
                   w-40 bg-amber-950 text-white text-sm rounded-lg shadow-lg
                   opacity-0 invisible group-hover:opacity-100 group-hover:visible
                   transition-all duration-200"
-              >
-                <ul className="flex flex-col">
-                  {userModalAssets.map(({ label, action }, index) => (
-                    <li
-                      key={index}
-                      className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                      onClick={() => action()}
-                    >
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                >
+                  <ul className="flex flex-col">
+                    {userModalAssets.map(({ label, action }, index) => (
+                      <li
+                        key={index}
+                        className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                        onClick={() => action()}
+                      >
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2 items-center cursor-pointer hover:opacity-80">
@@ -83,44 +85,7 @@ const Header = () => {
         </div>
       </div>
 
-      {showLoginModal && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={toggleLoginModal}
-          />
-          <div className="absolute top-[50%] bg-white p-6 z-50 w-96 rounded-md">
-            <div className="flex flex-col gap-3">
-              <div className="flex w-full justify-end">
-                <span className="cursor-pointer" onClick={toggleLoginModal}>
-                  <CloseIcon color="#000" />
-                </span>
-              </div>
-
-              <h2 className="text-stone-900 font-bold text-2xl">Вхід</h2>
-
-              <p className="text-sm text-stone-700">
-                Ласкаво просимо! Авторизуйтеся для зручнішого користування
-                магазином та застосування персональних знижок.
-              </p>
-
-              <button
-                onClick={() => signIn('google')}
-                className="px-3 py-1 bg-amber-700 text-white rounded text-sm hover:opacity-80"
-              >
-                Увійти з Google
-              </button>
-
-              <button
-                onClick={() => signOut()}
-                className="px-3 py-1 bg-amber-700 text-white rounded text-sm hover:opacity-80"
-              >
-                Вийти
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      {showLoginModal && <AuthModal toggleLoginModal={toggleLoginModal} />}
     </div>
   );
 };
