@@ -39,7 +39,9 @@ const Header = () => {
             >
               <span className="group-hover:opacity-80">
                 {user ? (
-                  <div className="w-6 h-6 overflow-hidden rounded-full">
+                  <div
+                    className={`w-6 h-6 overflow-hidden rounded-full ${user.image ? 'block' : 'hidden'}`}
+                  >
                     <img src={user.image as string} alt="userImage" />
                   </div>
                 ) : (
@@ -48,7 +50,7 @@ const Header = () => {
               </span>
 
               <p className="text-white uppercase text-sm group-hover:opacity-80 text-ellipsis">
-                {user ? user.name : 'Увійти'}
+                {user ? user.name || user.email : 'Увійти'}
               </p>
 
               {user && (

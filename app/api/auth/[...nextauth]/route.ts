@@ -1,119 +1,134 @@
-import bcrypt from 'bcryptjs';
 import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 
 const handler = NextAuth({
   providers: [
+    // 👉 Google OAuth
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
+
+    // 👉 Email + Password (Credentials)
     Credentials({
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        name: { label: 'Name', type: 'text' },
       },
-      async authorize(
-        credentials: { email: string; password: string } | undefined
-      ) {
-        if (!credentials) return null;
 
-        const { email, password } = credentials;
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password)
+          throw new Error('Введіть email та пароль');
+
+        const { email, password, name } = credentials;
 
         try {
-          // Перевіряємо, чи існує користувач в базі
-          const { data: existingUser, error: findUserError } = await supabase
+          const { data: existingUser, error: findError } = await supabase
             .from('users')
             .select('*')
             .eq('email', email)
-            .single();
+            .maybeSingle();
 
-          if (findUserError && findUserError.code !== 'PGRST116') {
-            console.error(
-              '⚠️ Помилка при перевірці існування користувача:',
-              findUserError.message
-            );
-            return null;
+          if (findError && findError.code !== 'PGRST116') {
+            console.error('⚠️ Помилка запиту користувача:', findError.message);
+            throw new Error('Помилка запиту користувача');
           }
 
           if (!existingUser) {
-            // Якщо користувач не знайдений, повертаємо помилку
-            console.error('❌ Користувач не знайдений');
-            return null;
-            // throw new Error('Користувач не знайдений');
+            const hashed = await bcrypt.hash(password, 10);
+
+            const { data: newUser, error: insertError } = await supabase
+              .from('users')
+              .insert({
+                email,
+                password: hashed,
+                created_at: new Date().toISOString(),
+                provider: 'credentials',
+              })
+              .select('*')
+              .single();
+
+            if (insertError) {
+              throw new Error('Не вдалося створити користувача');
+            }
+
+            return {
+              id: newUser.id,
+              email: newUser.email,
+              name: newUser.name,
+            };
           }
 
-          // Якщо користувач існує, перевіряємо пароль
-          const isPasswordCorrect = await bcrypt.compare(
-            password,
-            existingUser.password
-          );
-          if (!isPasswordCorrect) {
-            console.error('❌ Невірний пароль');
+          if (!existingUser.password) {
+            throw new Error(
+              'Цей користувач створений через Google — увійди через Google.'
+            );
+          }
+
+          const isValid = await bcrypt.compare(password, existingUser.password);
+
+          if (!isValid) {
             throw new Error('Невірний пароль');
           }
 
-          // Якщо все гаразд, повертаємо користувача з необхідними полями
           return {
             id: existingUser.id,
             email: existingUser.email,
             name: existingUser.name,
           };
-        } catch (error) {
-          console.error('🔥 Помилка при авторизації або реєстрації:', error);
-          throw new Error('Помилка при авторизації124554');
+        } catch (err) {
+          throw new Error('Помилка при вході або реєстрації');
         }
       },
     }),
   ],
-  secret: process.env.AUTH_SECRET,
-  session: {
-    strategy: 'jwt', // Використовуємо JWT для зберігання сесії
-  },
-  callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
-      console.log('🔐 [signIn] Логін користувача:', user);
 
+  secret: process.env.AUTH_SECRET,
+
+  session: { strategy: 'jwt' },
+
+  callbacks: {
+    async signIn({ user, account }) {
       try {
-        const { data, error } = await supabase
+        if (!user?.email) return false;
+
+        const { data } = await supabase
           .from('users')
           .select('id')
-          .eq('email', user?.email)
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('⚠️ Помилка при перевірці існування:', error.message);
-        }
+          .eq('email', user.email)
+          .maybeSingle();
 
         if (!data) {
-          console.log('📦 Додаємо користувача...');
-          const { error: insertError } = await supabase.from('users').insert({
-            email: user?.email,
-            name: user?.name,
-            image: user?.image,
+          console.log('🪄 Створюємо користувача через callback...');
+          await supabase.from('users').insert({
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            provider: account?.provider || 'credentials',
             created_at: new Date().toISOString(),
           });
-
-          if (insertError) {
-            console.error(
-              '❌ Помилка вставки користувача:',
-              insertError.message
-            );
-          } else {
-            console.log('✅ Користувача додано в Supabase!');
-          }
-        } else {
-          console.log('ℹ️ Користувач вже існує:', data.id);
         }
 
-        return true; // Дозволяємо авторизацію в будь-якому випадку
+        return true;
       } catch (err) {
-        console.error('🔥 Фатальна помилка в signIn callback:', err);
-        return true; // Дозволяємо авторизацію навіть якщо щось пішло не так
+        console.error('🔥 signIn callback error:', err);
+        return false;
       }
+    },
+
+    async jwt({ token, user }) {
+      if (user) token.user = user;
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (token?.user) session.user = token.user;
+      return session;
     },
   },
 });

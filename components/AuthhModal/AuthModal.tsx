@@ -40,8 +40,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
       password,
     });
 
-    console.log(result);
-
     if (result?.error) {
       addSnackbar({
         key: 'error',
@@ -50,62 +48,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
       });
     }
   };
-
-  // const onSubmit = async (values: FieldValues) => {
-  //   const { email, password, name } = values;
-  //   try {
-  //     if (showRegisterFlow) {
-  //       // Виклик API реєстрації
-  //       const res = await fetch('/api/auth/signup', {
-  //         method: 'POST',
-  //         headers: { 'Content-Type': 'application/json' },
-  //         body: JSON.stringify({ email, password, name }),
-  //       });
-
-  //       const data = await res.json();
-
-  //       if (!res.ok) {
-  //         addSnackbar({
-  //           key: 'error',
-  //           text: data.error || 'Sign-up failed',
-  //           variant: 'error',
-  //         });
-  //       } else {
-  //         // Показати інфо про лист підтвердження
-  //         addSnackbar({
-  //           key: 'info',
-  //           text: 'Лист для підтвердження реєстрації надіслано. Перевірте пошту.',
-  //           variant: 'info',
-  //         });
-  //       }
-  //       // При реєстрації не логінити користувача, просто вийти з функції
-  //       return;
-  //     }
-
-  //     // Якщо це не реєстрація, а вхід — логін через credentials
-  //     const login = await signIn('credentials', {
-  //       email,
-  //       password,
-  //       redirect: false,
-  //     });
-
-  //     if (login?.error) {
-  //       addSnackbar({
-  //         key: 'error',
-  //         text: login.error,
-  //         variant: 'error',
-  //       });
-  //     }
-  //   } catch (err) {
-  //     addSnackbar({
-  //       key: 'error',
-  //       text: 'Щось пішло не так',
-  //       variant: 'error',
-  //     });
-  //   } finally {
-  //     toggleLoginModal();
-  //   }
-  // };
 
   return (
     <>
