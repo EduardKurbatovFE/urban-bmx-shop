@@ -3,16 +3,17 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
+import { v5 as uuidv5 } from 'uuid';
+
+const NAMESPACE = process.env.UUID_NAMESPACE!;
 
 const handler = NextAuth({
   providers: [
-    // 👉 Google OAuth
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
 
-    // 👉 Email + Password (Credentials)
     Credentials({
       name: 'Credentials',
       credentials: {
@@ -25,7 +26,7 @@ const handler = NextAuth({
         if (!credentials?.email || !credentials?.password)
           throw new Error('Введіть email та пароль');
 
-        const { email, password, name } = credentials;
+        const { email, password } = credentials;
 
         try {
           const { data: existingUser, error: findError } = await supabase
@@ -94,35 +95,60 @@ const handler = NextAuth({
 
   callbacks: {
     async signIn({ user, account }) {
-      try {
-        if (!user?.email) return false;
+      if (!user?.email) return false;
 
-        const { data } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', user.email)
-          .maybeSingle();
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', user.email)
+        .maybeSingle();
 
-        if (!data) {
-          console.log('🪄 Створюємо користувача через callback...');
-          await supabase.from('users').insert({
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            provider: account?.provider || 'credentials',
-            created_at: new Date().toISOString(),
-          });
-        }
-
-        return true;
-      } catch (err) {
-        console.error('🔥 signIn callback error:', err);
+      if (error) {
+        console.error('Supabase select error:', error);
         return false;
       }
+
+      console.log(data, 123);
+
+      if (!data) {
+        let id = undefined;
+
+        if (account?.provider === 'google' && user.id) {
+          id = uuidv5(user.id, NAMESPACE);
+        }
+
+        console.log(id, account?.provider);
+
+        const { error: insertError } = await supabase.from('users').insert({
+          id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          provider: account?.provider || 'credentials',
+          created_at: new Date().toISOString(),
+        });
+
+        if (insertError) {
+          console.error('Failed to insert Google user:', insertError);
+          return false;
+        }
+      }
+
+      return true;
     },
 
     async jwt({ token, user }) {
-      if (user) token.user = user;
+      if (user?.email) {
+        const { data } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('email', user.email)
+          .maybeSingle();
+
+        if (data) {
+          token.user = data;
+        }
+      }
       return token;
     },
 

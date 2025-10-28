@@ -1,8 +1,9 @@
 'use client';
 
+import { User } from '@/types/common';
 import { useUserTabs } from './useUserTabs';
 
-const UserTabs = () => {
+const UserTabs: React.FC<{ user: User }> = ({ user }) => {
   const { tabs, handleChangeTab } = useUserTabs();
 
   return (
@@ -10,6 +11,7 @@ const UserTabs = () => {
       <div className="flex w-full justify-center gap-8">
         {tabs.map(({ name, id, active }) => (
           <div
+            key={id}
             className="group relative pb-2 text-sm font-medium text-stone900 hover:opacity-80 transition-colors cursor-pointer"
             onClick={() => handleChangeTab(id)}
           >

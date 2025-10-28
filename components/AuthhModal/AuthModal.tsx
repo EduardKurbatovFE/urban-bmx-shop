@@ -1,53 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import CloseIcon from '@/icons/CloseIcon';
-import { signIn } from 'next-auth/react';
 import GoogleIcon from '@/icons/GoogleIcon';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { authSchema } from './schema';
-import useSnackbar from '../Snackbar/hooks/useSnaakcbar';
+import Loader from '../Loader';
+import { useAuthModal } from './useAuthModal';
 
 interface AuthModalProps {
   toggleLoginModal: () => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
-  const [showRegisterFlow, setShowRegisterFlow] = useState(false);
-  const addSnackbar = useSnackbar();
-
   const {
     register,
     handleSubmit,
-    clearErrors,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(authSchema),
   });
-
-  const toggleAuthFlow = () => {
-    clearErrors();
-    setShowRegisterFlow((prev) => !prev);
-  };
-
-  const onSubmit = async (values: FieldValues) => {
-    const { email, password } = values;
-
-    const result = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
-    });
-
-    if (result?.error) {
-      addSnackbar({
-        key: 'error',
-        text: 'Невірний логін або пароль',
-        variant: 'error',
-      });
-    }
-  };
+  const {
+    showRegisterFlow,
+    loaders,
+    disabled,
+    onSubmit,
+    toggleAuthFlow,
+    handleGoogleSignIn,
+  } = useAuthModal(toggleLoginModal, reset);
 
   return (
     <>
@@ -80,6 +62,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
                 placeholder="Email"
                 className="p-2 rounded text-black border-stone-400 border outline-0 w-full"
                 required
+                disabled={disabled}
               />
               {errors.email?.message && (
                 <p className="text-red-400 text-xs">{errors.email.message}</p>
@@ -91,6 +74,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
                 placeholder="Пароль"
                 className="p-2 rounded text-black border-stone-400 border outline-0 w-full"
                 required
+                disabled={disabled}
               />
 
               {errors.password?.message && (
@@ -107,6 +91,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
                     placeholder="Підтвердіть пароль"
                     className="p-2 rounded text-black border-stone-400 border outline-0 w-full"
                     required
+                    disabled={disabled}
                   />
                   {errors.confirmPassword?.message && (
                     <p className="text-red-400 text-xs mt-1">
@@ -118,18 +103,26 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
 
               <div className="flex flex-col gap-3 mt-3">
                 <button
+                  disabled={disabled}
                   type="submit"
-                  className="flex items-center justify-center bg-stone-400 rounded text-sm hover:opacity-90 cursor-pointer h-9"
+                  className={`flex items-center justify-center bg-stone-900 rounded text-sm hover:opacity-90 cursor-pointer h-9 
+                    ${disabled ? 'pointer-events-none' : 'pointer-events-auto'}`}
                 >
-                  <p className="text-white">
+                  <span className="flex items-center text-white gap-4">
+                    {loaders.credentials && <Loader light />}
+
                     {showRegisterFlow ? 'Зареєструватись' : 'Увійти'}
-                  </p>
+                  </span>
                 </button>
 
                 <button
-                  onClick={() => signIn('google')}
-                  className="flex items-center justify-center gap-2 border border-stone-400 rounded text-sm hover:opacity-90 cursor-pointer h-9"
+                  disabled={disabled}
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className={`flex items-center justify-center gap-2 border border-stone-400 rounded text-sm hover:opacity-90 cursor-pointer h-9 
+                    ${disabled ? 'pointer-events-none' : 'pointer-events-auto'}`}
                 >
+                  {loaders.google && <Loader />}
                   <p className="text-stone-700">{`${showRegisterFlow ? 'Зареєструватись' : 'Увійти'} з Google`}</p>
                   <GoogleIcon width={24} height={24} />
                 </button>
@@ -141,7 +134,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ toggleLoginModal }) => {
                 {showRegisterFlow ? 'Вже є аккаунт ?' : 'Ще немає аккаунту ?'}
                 <span
                   onClick={toggleAuthFlow}
-                  className="text-blue-400 font-bold cursor-pointer hover:opacity-90 ml-1.5"
+                  className={`text-blue-400 font-bold cursor-pointer hover:opacity-90 ml-1.5 ${disabled ? 'cursor-not-allowed pointer-events-none' : 'cursor-pointer'} `}
                 >
                   {showRegisterFlow ? 'Увійти' : 'Зареєструватись'}
                 </span>
