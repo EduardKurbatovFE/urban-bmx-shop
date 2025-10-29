@@ -16,7 +16,7 @@ const Header = () => {
     useHeader();
 
   return (
-    <div className="flex justify-center items-center bg-stone-900 min-h-40 py-4 md:max-2xl:p-6 max-md:p-6">
+    <div className="flex justify-center items-center bg-stone-900 min-h-40 py-4 md:max-2xl:p-6 max-md:p-6  max-md:min-h-min">
       <div className="flex flex-col w-1/2 gap-4 md:max-2xl:w-full max-md:w-full">
         <div className="flex justify-between items-center w-full max-md:flex-col max-md:gap-4 min-lg:gap-3">
           <div className="w-26 cursor-pointer" onClick={() => router.push('/')}>

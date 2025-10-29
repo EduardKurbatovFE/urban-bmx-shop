@@ -3,8 +3,8 @@ import UserTabs from '../components/UserTabs';
 import { useSession } from 'next-auth/react';
 import { User } from '@/types/common';
 
-const UserPage = async ({ params }: { params: Promise<{ id: string }> }) => {
-  const { id } = await params;
+const UserPage = async ({ params }: { params: { id: string } }) => {
+  const { id } = params;
 
   const { data: user } = await supabase
     .from('users')
@@ -18,7 +18,7 @@ const UserPage = async ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="flex justify-center py-6">
-      <div className="w-1/2">
+      <div className="w-4/12">
         <UserTabs user={user} />
       </div>
     </div>

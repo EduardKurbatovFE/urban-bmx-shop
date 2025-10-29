@@ -7,3 +7,5 @@ export type User = {
   provider: string;
   id: string;
 };
+
+export type Breakpoint = 'xl' | 'lg' | 'md' | 'sm' | 'xs' | '2xs' | '3xs';

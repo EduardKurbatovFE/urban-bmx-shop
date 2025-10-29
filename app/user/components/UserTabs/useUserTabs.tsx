@@ -1,37 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import MyData from '../MyData';
-import { useSession } from 'next-auth/react';
+import { User } from '@/types/common';
 
 const TABS = [
-  { name: 'Moї данні', active: true, id: 'myData', component: <MyData /> },
+  {
+    name: 'Moї данні',
+    id: 'myData',
+  },
   {
     name: 'Історія Замовлень',
-    active: false,
     id: 'ordersHistory',
-    component: <>hi</>,
   },
-  { name: 'Список бажань', active: false, id: 'wishList', component: <>hi</> },
-];
+  { name: 'Список бажань', id: 'wishList' },
+] as const;
 
 type TabId = (typeof TABS)[number]['id'];
-type Tab = (typeof TABS)[number];
 
-export const useUserTabs = () => {
-  const [tabs, setTabs] = useState<Tab[]>([...TABS]);
-  const { data } = useSession();
-
-  console.log(data);
+export const useUserTabs = (user: User) => {
+  const [activeTabId, setActiveTabId] = useState<TabId>('myData');
 
   const handleChangeTab = (id: TabId) => {
-    const updatedTabs = tabs.map((tab) => ({
-      ...tab,
-      active: tab.id === id,
-    }));
-
-    setTabs(updatedTabs);
+    setActiveTabId(id);
   };
 
-  return { tabs, handleChangeTab };
+  const tabComponent = useMemo<React.ReactNode>(() => {
+    switch (activeTabId) {
+      case 'myData':
+        return <MyData user={user} />;
+      case 'ordersHistory':
+        return <>hi</>;
+      case 'wishList':
+        return <>hi</>;
+      default:
+        return null;
+    }
+  }, [activeTabId, user]);
+
+  return { tabs: TABS, activeTabId, tabComponent, handleChangeTab };
 };
