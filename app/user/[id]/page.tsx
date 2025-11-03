@@ -1,18 +1,17 @@
-import { supabase } from '@/lib/supabase';
+import { getBaseUrl } from '@/lib/getBaseUrl';
 import UserTabs from '../components/UserTabs';
-import { useSession } from 'next-auth/react';
-import { User } from '@/types/common';
 
 const UserPage = async ({ params }: { params: { id: string } }) => {
   const { id } = params;
+  const baseURL = await getBaseUrl();
 
-  const { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', id)
-    .single<User>();
+  const res = await fetch(`${baseURL}/api/user/${id}`, {
+    cache: 'force-cache',
+  });
 
-  if (!user) {
+  const user = await res.json();
+
+  if (!res.ok) {
     return <p>Упс! Щось пішло не так...</p>;
   }
 

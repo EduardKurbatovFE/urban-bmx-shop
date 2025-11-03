@@ -108,21 +108,23 @@ const handler = NextAuth({
         return false;
       }
 
-      console.log(data, 123);
 
       if (!data) {
-        let id = undefined;
+        let id;
+        let name;
+        let lastName;
 
         if (account?.provider === 'google' && user.id) {
           id = uuidv5(user.id, NAMESPACE);
+          name = user.name?.split(' ')[0];
+          lastName = user.name?.split(' ')[1];
         }
-
-        console.log(id, account?.provider);
 
         const { error: insertError } = await supabase.from('users').insert({
           id,
           email: user.email,
-          name: user.name,
+          name,
+          lastName,
           image: user.image,
           provider: account?.provider || 'credentials',
           created_at: new Date().toISOString(),
@@ -141,9 +143,11 @@ const handler = NextAuth({
       if (user?.email) {
         const { data } = await supabase
           .from('users')
-          .select('id, name, email')
+          .select('id, name, lastName, email')
           .eq('email', user.email)
           .maybeSingle();
+
+          console.log(data, 'd')
 
         if (data) {
           token.user = data;
@@ -153,6 +157,9 @@ const handler = NextAuth({
     },
 
     async session({ session, token }) {
+
+      console.log(token, 't')
+
       if (token?.user) session.user = token.user;
       return session;
     },

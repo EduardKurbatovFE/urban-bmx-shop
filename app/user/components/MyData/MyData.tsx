@@ -1,24 +1,19 @@
 'use client';
 
-import CameraIcon from '@/icons/CameraIcon';
-import { User } from '@/types/common';
-import EditableField from './EditableField';
 import { useMemo } from 'react';
-import UploadAvatarSection from './UploadAvatarSection';
+import { User } from '@/types/common';
+import EditableField from './components/EditableField';
+import UploadAvatarSection from './components/UploadAvatarSection';
 
-interface MyDataProps {
-  user: User;
-}
-
-const MyData: React.FC<MyDataProps> = ({ user }) => {
+const MyData: React.FC<{ user: User }> = ({ user }) => {
   const userAssets = useMemo(() => {
     return [
-      { label: "Ім'я", value: user.name?.split(' ')[0] },
-      { label: 'Прізвище', value: user.name?.split(' ')[1] },
+      { label: "Ім'я", value: user.name },
+      { label: 'Прізвище', value: user.lastName },
 
       { label: 'E-mail', value: user.email, readonly: true },
-      { label: 'Телефон', value: '' },
-      { label: 'Місто', value: '' },
+      { label: 'Телефон', value: user.phoneNumber },
+      { label: 'Місто', value: user.city },
     ];
   }, [user]);
 
@@ -28,7 +23,7 @@ const MyData: React.FC<MyDataProps> = ({ user }) => {
 
       <div className="flex flex-col gap-3">
         {userAssets.map((asset, index) => (
-          <EditableField key={index} asset={asset} />
+          <EditableField id={user.id} key={index} asset={asset} />
         ))}
       </div>
     </div>

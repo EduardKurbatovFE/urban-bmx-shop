@@ -1,11 +1,12 @@
 export type User = {
   email: string;
   name: string | null;
+  lastName: string | null;
   image: string | null;
   created_at: string;
-  password: string;
+  password: string | null;
   provider: string;
   id: string;
+  city: string | null;
+  phoneNumber: number | null;
 };
-
-export type Breakpoint = 'xl' | 'lg' | 'md' | 'sm' | 'xs' | '2xs' | '3xs';

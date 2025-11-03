@@ -4,19 +4,28 @@ import CloseIcon from '@/icons/CloseIcon';
 import PenIcon from '@/icons/PenIcon';
 import SaveIcon from '@/icons/SaveIcon';
 import { useState } from 'react';
+import { EditableFieldProps, UserEditableField } from './types';
 
-interface EditableFieldProps {
-  asset: {
-    label: string;
-    value?: string;
-    readonly?: boolean;
-  };
-}
-
-const EditableField: React.FC<EditableFieldProps> = ({ asset }) => {
-  const { label, value, readonly } = asset;
-  const [draft, setDraft] = useState(value);
+const EditableField: React.FC<EditableFieldProps> = ({
+  asset: { label, value, readonly },
+  id,
+}) => {
+  const [draft, setDraft] = useState(value || '');
   const [editMode, setEditMode] = useState(false);
+
+  const handleEditFiled = async (
+    field: UserEditableField,
+    value: string | number
+  ) => {
+    await fetch(`/api/user/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        field,
+        value,
+      }),
+    });
+  };
 
   return (
     <div>
