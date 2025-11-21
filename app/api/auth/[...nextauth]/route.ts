@@ -108,7 +108,6 @@ const handler = NextAuth({
         return false;
       }
 
-
       if (!data) {
         let id;
         let name;
@@ -147,8 +146,6 @@ const handler = NextAuth({
           .eq('email', user.email)
           .maybeSingle();
 
-          console.log(data, 'd')
-
         if (data) {
           token.user = data;
         }
@@ -157,9 +154,6 @@ const handler = NextAuth({
     },
 
     async session({ session, token }) {
-
-      console.log(token, 't')
-
       if (token?.user) session.user = token.user;
       return session;
     },

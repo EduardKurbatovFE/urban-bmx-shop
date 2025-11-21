@@ -4,16 +4,25 @@ import { useMemo } from 'react';
 import { User } from '@/types/common';
 import EditableField from './components/EditableField';
 import UploadAvatarSection from './components/UploadAvatarSection';
+import { UserEditableField } from './components/EditableField/types';
 
 const MyData: React.FC<{ user: User }> = ({ user }) => {
-  const userAssets = useMemo(() => {
+  const userAssets: {
+    label: string;
+    value: string | null;
+    fieldName?: UserEditableField;
+    readOnly?: boolean;
+  }[] = useMemo(() => {
     return [
-      { label: "Ім'я", value: user.name },
-      { label: 'Прізвище', value: user.lastName },
-
-      { label: 'E-mail', value: user.email, readonly: true },
-      { label: 'Телефон', value: user.phoneNumber },
-      { label: 'Місто', value: user.city },
+      { label: "Ім'я", value: user.name, fieldName: 'name' },
+      { label: 'Прізвище', value: user.lastName, fieldName: 'lastName' },
+      {
+        label: 'E-mail',
+        value: user.email,
+        readOnly: true,
+      },
+      { label: 'Телефон', value: user.phoneNumber, fieldName: 'phoneNumber' },
+      { label: 'Місто', value: user.city, fieldName: 'city' },
     ];
   }, [user]);
 

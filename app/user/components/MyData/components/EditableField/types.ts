@@ -4,12 +4,10 @@ export interface EditableFieldProps {
   id: string;
   asset: {
     label: string;
-    value: string | number | null;
-    readonly?: boolean;
+    value: string | null;
+    fieldName?: UserEditableField;
+    readOnly?: boolean;
   };
 }
 
-export type UserEditableField = Omit<
-  User,
-  'password' | 'created_at' | 'provider' | 'id' | 'image' | 'email'
->;
+export type UserEditableField = 'name' | 'lastName' | 'city' | 'phoneNumber';

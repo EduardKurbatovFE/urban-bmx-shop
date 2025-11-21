@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/types/common';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   try {
     const { data: user, error } = await supabase
       .from('users')
