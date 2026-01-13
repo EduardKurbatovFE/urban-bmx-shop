@@ -6,13 +6,15 @@ import EditableField from './components/EditableField';
 import UploadAvatarSection from './components/UploadAvatarSection';
 import { UserEditableField } from './components/EditableField/types';
 
+type UserAssets = {
+  label: string;
+  value: string | null;
+  fieldName?: UserEditableField;
+  readOnly?: boolean;
+};
+
 const MyData: React.FC<{ user: User }> = ({ user }) => {
-  const userAssets: {
-    label: string;
-    value: string | null;
-    fieldName?: UserEditableField;
-    readOnly?: boolean;
-  }[] = useMemo(() => {
+  const userAssets: UserAssets[] = useMemo(() => {
     return [
       { label: "Ім'я", value: user.name, fieldName: 'name' },
       { label: 'Прізвище', value: user.lastName, fieldName: 'lastName' },
@@ -28,7 +30,7 @@ const MyData: React.FC<{ user: User }> = ({ user }) => {
 
   return (
     <div className="flex flex-col w-full p-6 gap-8 border border-stone-300 rounded-3xl">
-      <UploadAvatarSection />
+      <UploadAvatarSection id={user.id} avatar={user.avatar_url} />
 
       <div className="flex flex-col gap-3">
         {userAssets.map((asset, index) => (

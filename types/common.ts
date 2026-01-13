@@ -4,7 +4,8 @@ type NullableKeys =
   | 'image'
   | 'password'
   | 'city'
-  | 'phoneNumber';
+  | 'phoneNumber'
+  | 'avatar_url';
 
 export type User = {
   email: string;

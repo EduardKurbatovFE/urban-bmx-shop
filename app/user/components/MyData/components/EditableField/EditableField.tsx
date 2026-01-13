@@ -18,6 +18,11 @@ const EditableField: React.FC<EditableFieldProps> = ({
   const [editMode, setEditMode] = useState(false);
   const [isEditing, setEditing] = useState(false);
 
+  const cancelEditMode = () => {
+    setEditMode((prev) => !prev);
+    setDraft(value || '');
+  };
+
   const handleEditFiled = async (
     field: UserEditableField,
     newValue: string
@@ -72,7 +77,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
           <div className="flex gap-2">
             <div
               className={`flex items-center bg-white p-2 rounded-lg cursor-pointer size-8 ${isEditing ? 'pointer-events-none' : 'pointer-events-auto'}`}
-              onClick={() => setEditMode((prev) => !prev)}
+              onClick={cancelEditMode}
             >
               <CloseIcon width={16} height={10} color="#171717" />
             </div>
