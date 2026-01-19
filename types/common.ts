@@ -15,3 +15,9 @@ export type User = {
 } & {
   [K in NullableKeys]: string | null;
 };
+
+export type Part = {
+  id: number;
+  name: string;
+  logicalName: string;
+};

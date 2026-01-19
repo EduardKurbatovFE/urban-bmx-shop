@@ -15,13 +15,14 @@ const geistMono = Geist_Mono({
 
 const inter = Open_Sans({
   subsets: ['latin', 'cyrillic'],
-  weight: ['400', '700'], // опційно
+  weight: ['400', '700'],
   display: 'swap',
 });
 
 export const metadata = {
   title: 'Urban BMX Shop',
 };
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -81,6 +81,7 @@ const handler = NextAuth({
             id: existingUser.id,
             email: existingUser.email,
             name: existingUser.name,
+            avatar: existingUser.avatar_url,
           };
         } catch (err) {
           throw new Error('Помилка при вході або реєстрації');
@@ -138,17 +139,24 @@ const handler = NextAuth({
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.email) {
         const { data } = await supabase
           .from('users')
-          .select('id, name, lastName, email')
+          .select('id, name, lastName, email, avatar_url')
           .eq('email', user.email)
           .maybeSingle();
 
         if (data) {
           token.user = data;
         }
+      }
+
+      if (trigger === 'update' && session?.user && token.user) {
+        token.user = {
+          ...token.user,
+          ...session.user,
+        };
       }
       return token;
     },

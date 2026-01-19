@@ -29,7 +29,7 @@ const MyData: React.FC<{ user: User }> = ({ user }) => {
   }, [user]);
 
   return (
-    <div className="flex flex-col w-full p-6 gap-8 border border-stone-300 rounded-3xl">
+    <div className="flex flex-col w-full gap-8 border-container rounded-3xl">
       <UploadAvatarSection id={user.id} avatar={user.avatar_url} />
 
       <div className="flex flex-col gap-3">

@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const formData = await req.formData();
@@ -15,36 +17,44 @@ export async function PATCH(
       return NextResponse.json({ error: 'File not provided' }, { status: 400 });
     }
 
-    const fileExt = file.name.split('.').pop();
-    if (!fileExt) {
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Invalid file extension' },
-        { status: 400 }
+        { error: 'Unsupported file type' },
+        { status: 415 }
       );
     }
 
-    const filePath = `${id}/avatar.${fileExt}`;
+    const filePath = `${id}/avatar.jpg`;
 
-    const { error: removeError } = await supabase.storage
+    const { data: existingFiles, error: listError } = await supabase.storage
       .from('avatars')
-      .remove([filePath]);
+      .list(id);
 
-    if (removeError) {
-      console.warn('⚠️ Avatar remove warning:', removeError.message);
+    if (listError) {
+      console.warn('⚠️ Failed to list avatars:', listError.message);
+    }
+
+    if (existingFiles && existingFiles.length > 0) {
+      const paths = existingFiles.map((file) => `${id}/${file.name}`);
+
+      const { error: removeError } = await supabase.storage
+        .from('avatars')
+        .remove(paths);
+
+      if (removeError) {
+        console.warn('⚠️ Failed to remove old avatar:', removeError.message);
+      }
     }
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, {
-        contentType: file.type,
         upsert: true,
+        contentType: 'image/jpeg',
       });
 
     if (uploadError) {
-      return NextResponse.json(
-        { error: 'Failed to upload avatar', details: uploadError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
     const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
@@ -67,22 +77,15 @@ export async function PATCH(
       .eq('id', id);
 
     if (updateError) {
-      return NextResponse.json(
-        { error: 'Failed to update user', details: updateError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
     return NextResponse.json({ url: avatarUrl }, { status: 200 });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Unexpected server error';
+    const message = error instanceof Error ? error.message : 'Unexpected error';
 
     console.error('❌ Avatar upload error:', message);
 
-    return NextResponse.json(
-      { error: 'Unexpected error', details: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

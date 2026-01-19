@@ -17,15 +17,15 @@ export async function GET(
     if (error) throw error;
 
     if (!user) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json(user, { status: 200 });
   } catch (err: any) {
-    console.error('❌ Error fetching product:', err.message);
+    console.error('❌ Error fetching user:', err.message);
 
     return NextResponse.json(
-      { error: 'Failed to fetch product', details: err.message },
+      { error: 'Failed to fetch user', details: err.message },
       { status: 500 }
     );
   }

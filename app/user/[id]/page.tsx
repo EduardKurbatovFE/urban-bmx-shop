@@ -1,6 +1,7 @@
 import { getBaseUrl } from '@/lib/getBaseUrl';
 import UserTabs from '../components/UserTabs';
 import { CashTags } from '@/lib/constants/cashTags';
+import ErrorText from '@/components/Error';
 
 const UserPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const baseURL = await getBaseUrl();
@@ -13,7 +14,7 @@ const UserPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const user = await res.json();
 
   if (!res.ok) {
-    return <p>Упс! Щось пішло не так...</p>;
+    return <ErrorText />;
   }
 
   return (

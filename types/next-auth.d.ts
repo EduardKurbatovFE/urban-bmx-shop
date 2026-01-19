@@ -8,7 +8,7 @@ declare module 'next-auth' {
       email?: string;
       name?: string | null;
       lastName?: string | null;
-      image?: string | null;
+      avatar_url?: string | null;
     } & DefaultSession['user'];
   }
 

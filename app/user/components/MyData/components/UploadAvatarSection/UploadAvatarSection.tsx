@@ -4,8 +4,8 @@ import Loader from '@/components/Loader';
 import CameraIcon from '@/icons/CameraIcon';
 import CloseIcon from '@/icons/CloseIcon';
 import SaveIcon from '@/icons/SaveIcon';
-import { supabase } from '@/lib/supabase';
-import { useEffect, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRef, useState } from 'react';
 
 const UploadAvatarSection: React.FC<{ id: string; avatar: string | null }> = ({
   id,
@@ -17,6 +17,7 @@ const UploadAvatarSection: React.FC<{ id: string; avatar: string | null }> = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isEditing, setEditing] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const { data: session, update } = useSession();
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -67,6 +68,13 @@ const UploadAvatarSection: React.FC<{ id: string; avatar: string | null }> = ({
       });
 
       const data = await res.json();
+
+      await update({
+        user: {
+          ...session?.user,
+          avatar_url: data.url,
+        },
+      });
 
       setUserPhoto(data.url);
     } catch (error) {

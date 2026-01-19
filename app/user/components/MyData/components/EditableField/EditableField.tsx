@@ -3,51 +3,24 @@
 import CloseIcon from '@/icons/CloseIcon';
 import PenIcon from '@/icons/PenIcon';
 import SaveIcon from '@/icons/SaveIcon';
-import { useState } from 'react';
-import { EditableFieldProps, UserEditableField } from './types';
+import { EditableFieldProps } from './types';
 import Loader from '@/components/Loader';
-import { useRouter } from 'next/navigation';
 import PhoneInput from 'react-phone-number-input/input';
+import { useEditableField } from './useEditableField';
 
 const EditableField: React.FC<EditableFieldProps> = ({
   asset: { label, value, fieldName, readOnly },
   id,
 }) => {
-  const router = useRouter();
-  const [draft, setDraft] = useState(value || '');
-  const [editMode, setEditMode] = useState(false);
-  const [isEditing, setEditing] = useState(false);
-
-  const cancelEditMode = () => {
-    setEditMode((prev) => !prev);
-    setDraft(value || '');
-  };
-
-  const handleEditFiled = async (
-    field: UserEditableField,
-    newValue: string
-  ) => {
-    try {
-      setEditing(true);
-      await fetch(`/api/user/${id}/update`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          field,
-          value: newValue,
-        }),
-      });
-
-      router.refresh();
-      setDraft(newValue);
-    } catch (error) {
-      console.error(error, '1');
-      setDraft(value || '-');
-    } finally {
-      setEditMode(false);
-      setEditing(false);
-    }
-  };
+  const {
+    editMode,
+    draft,
+    isEditing,
+    handleDraft,
+    cancelEditMode,
+    handleEditFiled,
+    toggleEditMode,
+  } = useEditableField(id, value);
 
   return (
     <div>
@@ -60,7 +33,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
               withCountryCallingCode
               country="UA"
               value={draft as string}
-              onChange={(value) => setDraft(value as string)}
+              onChange={(value) => handleDraft(value as string)}
               className="w-8/12 p-2 bg-white"
             />
           ) : (
@@ -70,7 +43,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
               value={draft}
               placeholder={label}
               name={fieldName as unknown as string}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => handleDraft(e.target.value)}
             />
           )}
 
@@ -102,7 +75,7 @@ const EditableField: React.FC<EditableFieldProps> = ({
 
           <div
             className={`bg-white hidden group-hover:flex items-center p-2 rounded-lg cursor-pointer size-8 ${isEditing ? 'pointer-events-none' : 'pointer-events-auto'}`}
-            onClick={() => setEditMode((prev) => !prev)}
+            onClick={toggleEditMode}
           >
             <PenIcon color="#171717" />
           </div>
