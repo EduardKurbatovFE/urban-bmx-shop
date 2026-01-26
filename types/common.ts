@@ -20,4 +20,12 @@ export type Part = {
   id: number;
   name: string;
   logicalName: string;
+  image_url: string;
+};
+
+export type Product = {
+  id: string;
+  brand: string;
+  model: string;
+  image_url: string | null;
 };

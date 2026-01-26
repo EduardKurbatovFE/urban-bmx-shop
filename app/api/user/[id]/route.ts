@@ -6,8 +6,9 @@ export async function GET(
   _: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
+    const { id } = await params;
+
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
